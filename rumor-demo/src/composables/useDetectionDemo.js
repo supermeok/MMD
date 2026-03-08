@@ -46,9 +46,7 @@ export function useDetectionDemo() {
     reasoning: '三路证据显示标题与图片存在明显不一致，综合裁决为疑似谣言。'
   })
 
-  const allEvidenceDone = computed(() =>
-    evidenceAgents.every((item) => item.status === 'done')
-  )
+  const allEvidenceDone = computed(() => evidenceAgents.every((item) => item.status === 'done'))
 
   function resetDemo() {
     running.value = false
@@ -62,17 +60,16 @@ export function useDetectionDemo() {
     judge.logs = []
   }
 
-  async function startDemo() {
+  async function startDemo(payload = {}) {
     if (running.value) return
-
     resetDemo()
     running.value = true
 
-    const tasks = evidenceAgents.map((agent) => runMockEvidenceAgent(agent))
+    const tasks = evidenceAgents.map((agent) => runMockEvidenceAgent(agent, payload))
     await Promise.all(tasks)
 
     if (allEvidenceDone.value) {
-      await runMockJudge(judge)
+      await runMockJudge(judge, payload)
     }
 
     running.value = false

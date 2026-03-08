@@ -1,44 +1,55 @@
 <template>
-  <div
-    class="agent-card evidence-card"
-    :class="[status, { 'card-active': status === 'collecting', 'card-finished': status === 'done' }]"
+  <el-card
+    shadow="never"
+    class="agent-card unified-card"
+    :class="[status, { 'is-running': status === 'collecting', 'is-done': status === 'done' }]"
   >
-    <div class="card-glow"></div>
+    <div class="card-shine"></div>
 
-    <div class="agent-header">
-      <img :src="icon" :alt="title" class="agent-icon" />
-      <div>
-        <h3>{{ title }}</h3>
-        <p>{{ subtitle }}</p>
+    <div class="agent-card__header">
+      <div class="agent-card__meta">
+        <div class="agent-card__icon-wrap">
+          <img :src="icon" :alt="title" class="agent-card__icon" />
+        </div>
+
+        <div class="agent-card__text">
+          <h3>{{ title }}</h3>
+          <p>{{ subtitle }}</p>
+        </div>
       </div>
-      <span class="status-badge" :class="status">{{ statusText }}</span>
+
+      <el-tag round effect="dark" :type="tagType" class="agent-card__tag">
+        {{ statusText }}
+      </el-tag>
     </div>
 
-    <div class="agent-body">
-      <div class="orbital-area" :class="status">
-        <div class="core-dot"></div>
-        <span class="orbit orbit-a"></span>
-        <span class="orbit orbit-a orbit-delay-1"></span>
-        <span class="orbit orbit-a orbit-delay-2"></span>
-        <span class="orbit orbit-b"></span>
-        <span class="orbit orbit-b orbit-delay-3"></span>
-        <span v-if="status === 'done'" class="success-ring"></span>
+    <div class="agent-card__body">
+      <div class="agent-orbit" :class="status">
+        <div class="agent-orbit__core"></div>
+        <span class="agent-orbit__ring ring-1"></span>
+        <span class="agent-orbit__ring ring-2"></span>
+        <span class="agent-orbit__ring ring-3"></span>
+        <span v-if="status === 'done'" class="agent-orbit__success"></span>
       </div>
 
-      <div class="logs">
+      <div class="agent-card__logs">
         <div
           v-for="(log, idx) in logs"
           :key="idx"
-          class="log-item"
+          class="agent-log"
           :class="{ active: idx === logs.length - 1 && status === 'collecting' }"
         >
-          <span class="log-dot"></span>
-          <span>{{ log }}</span>
+          <span class="agent-log__dot"></span>
+          <span class="agent-log__text">{{ log }}</span>
         </div>
-        <div v-if="!logs.length" class="log-placeholder">等待任务开始...</div>
+
+        <div v-if="!logs.length" class="agent-log agent-log--placeholder">
+          <span class="agent-log__dot"></span>
+          <span class="agent-log__text">等待任务开始...</span>
+        </div>
       </div>
     </div>
-  </div>
+  </el-card>
 </template>
 
 <script setup>
@@ -74,5 +85,14 @@ const statusText = computed(() => {
     done: '已完成'
   }
   return map[props.status] || '待命'
+})
+
+const tagType = computed(() => {
+  const map = {
+    idle: 'info',
+    collecting: 'primary',
+    done: 'success'
+  }
+  return map[props.status] || 'info'
 })
 </script>
