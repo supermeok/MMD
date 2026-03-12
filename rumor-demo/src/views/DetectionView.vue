@@ -57,7 +57,7 @@
               {{ running ? '分析进行中...' : '开始分析检测' }}
             </el-button>
             <el-button size="large" :disabled="running" @click="resetAll">
-              重置
+              取消上传
             </el-button>
           </el-space>
         </el-form>

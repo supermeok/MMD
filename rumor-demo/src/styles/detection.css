@@ -762,11 +762,11 @@
 
 .flow-node {
   position: absolute;
-  width: 16px;
-  height: 16px;
-  left: 50%;
-  top: 69px;
-  transform: translateX(-50%);
+  width: 20px;
+  height: 20px;
+  left: 49%;
+  top: 68px;
+  /* transform: translateX(-50%); */
   border-radius: 50%;
   background: rgba(132, 146, 192, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.08);

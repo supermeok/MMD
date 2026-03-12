@@ -32,21 +32,21 @@
                 <div class="flow-agent-icon">
                   <img :src="textIcon" alt="文本真实性" />
                 </div>
-                <div class="flow-agent-title">文本真实性</div>
+                <div class="flow-agent-title">文本真实性分析</div>
               </div>
 
               <div class="flow-agent">
                 <div class="flow-agent-icon">
                   <img :src="visualIcon" alt="视觉真实性" />
                 </div>
-                <div class="flow-agent-title">视觉真实性</div>
+                <div class="flow-agent-title">视觉真实性检测</div>
               </div>
 
               <div class="flow-agent">
                 <div class="flow-agent-icon">
                   <img :src="consistencyIcon" alt="跨模态一致性" />
                 </div>
-                <div class="flow-agent-title">跨模态一致性</div>
+                <div class="flow-agent-title">跨模态一致性判断</div>
               </div>
             </div>
 

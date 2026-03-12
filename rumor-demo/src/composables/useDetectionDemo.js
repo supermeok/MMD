@@ -1,5 +1,6 @@
 import { computed, reactive, ref } from 'vue'
 import { runMockEvidenceAgent, runMockJudge } from '../services/mockDetection'
+import { getVerdict } from '../api'
 
 export function useDetectionDemo() {
   const running = ref(false)
@@ -7,15 +8,15 @@ export function useDetectionDemo() {
   const evidenceAgents = reactive([
     {
       key: 'text',
-      title: '文本真实性智能体',
-      subtitle: '抽取实体并核验文本事实',
+      title: '文本真实性分析智能体',
+      subtitle: '抽取实体执行外部搜索，核验文本事实',
       icon: new URL('../assets/text-agent.svg', import.meta.url).href,
       status: 'idle',
       logs: []
     },
     {
       key: 'visual',
-      title: '视觉真实性智能体',
+      title: '视觉真实性检测智能体',
       subtitle: '分析图像语义与事实线索',
       icon: new URL('../assets/visual-agent.svg', import.meta.url).href,
       status: 'idle',
@@ -40,10 +41,10 @@ export function useDetectionDemo() {
   })
 
   const verdict = reactive({
-    verdict: 'Fake',
-    category: 'mismatch',
-    confidence: 93,
-    reasoning: '三路证据显示标题与图片存在明显不一致，综合裁决为疑似谣言。'
+    verdict: '',
+    category: '',
+    confidence: 0,
+    reasoning: ''
   })
 
   const allEvidenceDone = computed(() => evidenceAgents.every((item) => item.status === 'done'))
@@ -58,9 +59,14 @@ export function useDetectionDemo() {
 
     judge.status = 'idle'
     judge.logs = []
+    verdict.verdict = ''
+    verdict.category = ''
+    verdict.confidence = 0
+    verdict.reasoning = ''
   }
 
   async function startDemo(payload = {}) {
+    // console.log('startDemo payload:', payload)
     if (running.value) return
     resetDemo()
     running.value = true
@@ -70,6 +76,16 @@ export function useDetectionDemo() {
 
     if (allEvidenceDone.value) {
       await runMockJudge(judge, payload)
+      try {
+        const result = await getVerdict(payload)
+        Object.assign(verdict, result)
+      } catch (error) {
+        console.error('Failed to fetch verdict:', error)
+        verdict.verdict = 'Error'
+        verdict.category = 'api_error'
+        verdict.confidence = 0
+        verdict.reasoning = '后端请求失败，请检查服务是否启动或跨域配置。'
+      }
     }
 
     running.value = false
