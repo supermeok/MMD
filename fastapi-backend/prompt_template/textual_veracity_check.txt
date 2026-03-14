@@ -1,0 +1,13 @@
+Given a news caption: [News caption]
+Determine if there is credible objective evidence that SUPPORTS or REFUTES the news caption.
+
+Thought 1: Identify the key entity noun in the news caption. The key entity noun could be person, object, location, or event.
+Action 1: Search [key entity noun].
+Observation: [External Knowledge]
+
+Thought 2: Based on the observation and other credible objective evidence, analyze if there is any objective fact that SUPPORTS or REFUTES the news caption, or if there is NOT ENOUGH INFORMATION.
+Analysis: [Analysis]
+
+Action 2: Provide your judgment with confidence score (0-100).
+If there is credible objective evidence refuting the news caption, answer: 'Finish[TEXT REFUTES, confidence=XX].'
+If not, answer: 'Finish[TEXT SUPPORTS, confidence=XX].'

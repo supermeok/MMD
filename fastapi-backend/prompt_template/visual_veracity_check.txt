@@ -1,0 +1,8 @@
+Analyze the given news image to determine if it contains content that contradicts objective facts.
+
+Thought 1: Please describe any content in the news image that may contradict objective facts.
+Observation: [Fact-conflicting Description]
+
+Action 1: Provide your judgment with confidence score (0-100).
+If there is credible objective fact refuting the news image, answer: 'Finish[IMAGE REFUTES, confidence=XX].'
+If not, answer: 'Finish[IMAGE SUPPORTS, confidence=XX].'
