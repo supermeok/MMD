@@ -1,6 +1,5 @@
-import { computed, reactive, ref } from 'vue'
-import { runMockEvidenceAgent, runMockJudge } from '../services/mockDetection'
-import { getVerdict } from '../api'
+﻿import { computed, reactive, ref } from 'vue'
+import { analyzeDetection } from '../api'
 
 export function useDetectionDemo() {
   const running = ref(false)
@@ -49,6 +48,44 @@ export function useDetectionDemo() {
 
   const allEvidenceDone = computed(() => evidenceAgents.every((item) => item.status === 'done'))
 
+  function formatDuration(durationMs = 0) {
+    if (!durationMs) return '0 ms'
+    if (durationMs < 1000) return `${durationMs} ms`
+    return `${(durationMs / 1000).toFixed(2)} s`
+  }
+
+  function applyRunningState() {
+    evidenceAgents.forEach((agent) => {
+      agent.status = 'collecting'
+      agent.logs = ['后端并行任务已启动，等待返回真实分析结果...']
+    })
+
+    judge.status = 'idle'
+    judge.logs = []
+  }
+
+  function applyAgentResult(agent, result) {
+    agent.status = result?.status || 'done'
+    agent.logs = [...(result?.logs || [])]
+
+    if (result?.duration_ms) {
+      agent.logs.push(`阶段耗时：${formatDuration(result.duration_ms)}`)
+    }
+  }
+
+  function applyJudgeResult(result, meta) {
+    judge.status = result?.status || 'done'
+    judge.logs = [...(result?.logs || [])]
+
+    if (result?.duration_ms) {
+      judge.logs.push(`裁决耗时：${formatDuration(result.duration_ms)}`)
+    }
+
+    if (meta?.elapsed_ms) {
+      judge.logs.push(`端到端总耗时：${formatDuration(meta.elapsed_ms)}`)
+    }
+  }
+
   function resetDemo() {
     running.value = false
 
@@ -66,29 +103,40 @@ export function useDetectionDemo() {
   }
 
   async function startDemo(payload = {}) {
-    // console.log('startDemo payload:', payload)
     if (running.value) return
     resetDemo()
     running.value = true
+    applyRunningState()
 
-    const tasks = evidenceAgents.map((agent) => runMockEvidenceAgent(agent, payload))
-    await Promise.all(tasks)
+    try {
+      const result = await analyzeDetection(payload)
+      const agentResults = result?.agents || {}
 
-    if (allEvidenceDone.value) {
-      await runMockJudge(judge, payload)
-      try {
-        const result = await getVerdict(payload)
-        Object.assign(verdict, result)
-      } catch (error) {
-        console.error('Failed to fetch verdict:', error)
-        verdict.verdict = 'Error'
-        verdict.category = 'api_error'
-        verdict.confidence = 0
-        verdict.reasoning = '后端请求失败，请检查服务是否启动或跨域配置。'
+      applyAgentResult(evidenceAgents[0], agentResults.text_analysis)
+      applyAgentResult(evidenceAgents[1], agentResults.visual_investigate)
+      applyAgentResult(evidenceAgents[2], agentResults.consistency_check)
+
+      if (allEvidenceDone.value) {
+        applyJudgeResult(result?.judge, result?.meta)
       }
-    }
 
-    running.value = false
+      Object.assign(verdict, result?.verdict || {})
+    } catch (error) {
+      const detail = error?.response?.data?.detail || '任务执行失败，请检查后端服务或接口配置。'
+      console.error('Failed to fetch detection result:', detail, error)
+      evidenceAgents.forEach((agent) => {
+        agent.status = 'idle'
+        agent.logs = [detail]
+      })
+      judge.status = 'idle'
+      judge.logs = [detail]
+      verdict.verdict = 'Error'
+      verdict.category = 'api_error'
+      verdict.confidence = 0
+      verdict.reasoning = detail
+    } finally {
+      running.value = false
+    }
   }
 
   return {

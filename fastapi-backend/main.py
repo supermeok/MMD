@@ -1,32 +1,33 @@
-from fastapi import FastAPI, File, Form, UploadFile
+﻿from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from veridict import MAC_Judge
 
-app = FastAPI(title="Rumor Detection API", version="0.1.0")
+from app.config import get_settings
+from app.schemas import DetectionResponse
+from app.services.detection import DetectionService
+
+
+settings = get_settings()
+app = FastAPI(title=settings.app_name, version=settings.app_version)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=list(settings.cors_origins),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+
 @app.get("/api/health")
 async def health():
-    return {"ok": True}
+    return {"ok": True, "version": settings.app_version}
 
-@app.post("/api/detection/verdict")
-async def detection_verdict(  # 改为 async def
+
+@app.post("/api/detection/analyze", response_model=DetectionResponse)
+@app.post("/api/detection/verdict", response_model=DetectionResponse)
+async def detection_analyze(
     title: str = Form(...),
     image: UploadFile = File(...),
 ):
-    print("\n=== Incoming detection request ===")
-    print(f"title: {title}")
-    print(f"image filename: {image.filename}")
-    print(f"image content_type: {image.content_type}")
-    print("=== End request ===\n")
-
-    verdict = await MAC_Judge(news_caption=title, image=image)  # 等待
-    print(verdict)
-    return verdict  # 原代码返回 verdict, 是元组，根据需求可调整
+    service = DetectionService(settings)
+    return await service.analyze(news_caption=title, image=image)
