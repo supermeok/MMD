@@ -1,98 +1,92 @@
-﻿import time
+﻿import wikipedia  # 需要 pip install wikipedia
 
-import requests
-from bs4 import BeautifulSoup
+def get_page_obs(page):
+    # find all paragraphs
+    paragraphs = page.split("\n")
+    paragraphs = [p.strip() for p in paragraphs if p.strip()]
 
-
-def clean_str(value: str) -> str:
-    return value.encode().decode("unicode-escape").encode("latin1").decode("utf-8")
-
-
-def get_page_obs(page: str) -> str:
-    paragraphs = [paragraph.strip() for paragraph in page.split("\n") if paragraph.strip()]
-
-    sentences: list[str] = []
-    for paragraph in paragraphs:
-        sentences.extend(paragraph.split(". "))
-
-    cleaned_sentences = [sentence.strip() + "." for sentence in sentences if sentence.strip()]
-    return " ".join(cleaned_sentences[:5])
+    # find all sentence
+    sentences = []
+    for p in paragraphs:
+        sentences += p.split('. ')
+    sentences = [s.strip() + '.' for s in sentences if s.strip()]
+    return ' '.join(sentences[:5])
 
 
-def search_step(entity: str, max_retries: int = 2) -> str:
-    entity_query = entity.replace(" ", "+")
-    search_url = f"https://en.wikipedia.org/w/index.php?search={entity_query}"
+def search_step(entity):
+    try:
+        page_details = wikipedia.page(entity, auto_suggest=False)
 
-    response_text = ""
-    for _ in range(max_retries):
-        try:
-            session = requests.session()
-            session.keep_alive = False
-            response = session.get(search_url, timeout=(5, 5))
-            response_text = response.text
-            response.close()
-            break
-        except requests.RequestException:
-            time.sleep(1)
+        # 获取页面内容
+        content = page_details.content
 
-    if not response_text:
-        return ""
+        # 过滤掉过短的行（比如标题、空行）
+        # 原代码有 len(p.split(" ")) > 2 的判断
+        page_re = ""
+        for p in content.split("\n"):
+            if len(p.split(" ")) > 2:
+                page_re += p
+                if not p.endswith("\n"):
+                    page_re += "\n"
 
-    soup = BeautifulSoup(response_text, features="html.parser")
-    result_divs = soup.find_all("div", {"class": "mw-search-result-heading"})
+        obs = get_page_obs(page_re)
 
-    if result_divs:
-        result_titles = [clean_str(div.get_text().strip()) for div in result_divs]
-        return f"Could not find {entity}. Similar: {result_titles[:5]}."
+    except wikipedia.DisambiguationError as e:
+        # 处理歧义页面 (对应原代码中的 result_divs 分支)
+        # e.options 包含了类似的词条列表
+        options = e.options[:5]
+        obs = f"Could not find {entity}. Similar: {options}."
 
-    page = [p.get_text().strip() for p in soup.find_all("p") + soup.find_all("ul")]
-    if any("may refer to:" in paragraph for paragraph in page):
-        return search_step(f"[{entity}]")
+    except wikipedia.PageError:
+        # 处理页面未找到
+        obs = f"Could not find {entity}."
 
-    page_result = ""
-    for paragraph in page:
-        if len(paragraph.split(" ")) > 2:
-            page_result += clean_str(paragraph)
-            if not paragraph.endswith("\n"):
-                page_result += "\n"
-    return get_page_obs(page_result)
+    except Exception as e:
+        # 处理连接超时或其他网络错误
+        obs = f"Could not find {entity}."
+
+    return obs
 
 
-def clean_data(output: str) -> str:
-    output = output.split(".")[0].strip()
-    output = output.replace("\\u00e9", "e")
-    output = output.replace("\u00e1", "a")
-    output = output.replace(" and ", ", ")
-    output = output.replace("The ", "")
-    output = output.replace("the ", "")
-    output = output.replace("A ", "")
-    output = output.replace(" two", "")
-    output = output.replace("Two", "")
-    output = output.replace("Two ", "")
-    output = output.replace("Three ", "")
-    output = output.replace(" a ", "")
-    output = output.replace("An ", "")
-    output = output.replace(" an ", "")
-    output = output.replace('"', "")
-    output = output.split(", ")[0]
-    if len(output.split(" ")) > 5:
-        return ""
+def clean_data(output):
+    output = output.split('.')[0].strip()
+    output = output.replace('\\u00e9', 'e')
+    output = output.replace('\u00e1', 'a')
+    output = output.replace(' and ', ', ')
+    output = output.replace('The ', '')
+    output = output.replace('the ', '')
+    output = output.replace('A ', '')
+    output = output.replace(' two', '')
+    output = output.replace('Two', '')
+    output = output.replace('Two ', '')
+    output = output.replace('Three ', '')
+    output = output.replace(' a ', '')
+    output = output.replace('An ', '')
+    output = output.replace(' an ', '')
+    output = output.replace('\"', '')
+    output = output.split(', ')[0]
+    char_num = len(output.split(' '))
+    if char_num > 5:
+        output = ''
     return output.lower()
 
 
-def search_wiki_knowledge(output: str) -> tuple[str, str]:
-    if "Thought 2" in output:
-        output = output.split("Thought 2", 1)[0].strip()
+def search_wiki_knowledge(output):
+    if 'Thought 2' in output:
+        output = output.split('Thought 2')[0].strip()
 
-    if "Finish:" not in output:
-        return "", ""
+    if 'Finish:' in output:
+        entity = output.split('Finish:')[1]
+        entity = clean_data(entity)
 
-    entity = clean_data(output.split("Finish:", 1)[1])
-    if not entity:
-        return "", ""
-
-    knowledge = search_step(entity)
-    if not knowledge or "Could not find" in knowledge:
-        knowledge = ""
+        if entity == '':
+            knowledge = ''
+        else:
+            knowledge = search_step(entity)
+            if 'Could not find' in knowledge:
+                knowledge = ''
+    else:
+        entity = ''
+        knowledge = ''
 
     return entity, knowledge

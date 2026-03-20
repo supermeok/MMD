@@ -47,7 +47,14 @@
         </div>
 
         <transition name="fade-up">
-          <VerdictBox v-if="status === 'done'" :verdict="verdict" />
+          <VerdictBox
+            v-if="status === 'done'"
+            :verdict="verdict"
+            :can-export="canExport"
+            :can-preview="canPreview"
+            @view-report="$emit('view-report')"
+            @download-report="$emit('download-report')"
+          />
         </transition>
       </div>
     </div>
@@ -57,6 +64,8 @@
 <script setup>
 import { computed } from 'vue'
 import VerdictBox from './VerdictBox.vue'
+
+defineEmits(['download-report', 'view-report'])
 
 const props = defineProps({
   title: {
@@ -87,6 +96,14 @@ const props = defineProps({
       confidence: 0,
       reasoning: ''
     })
+  },
+  canExport: {
+    type: Boolean,
+    default: false
+  },
+  canPreview: {
+    type: Boolean,
+    default: false
   }
 })
 

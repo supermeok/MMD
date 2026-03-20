@@ -1,4 +1,4 @@
-﻿from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field
 
 
 class VerdictResult(BaseModel):
@@ -8,12 +8,21 @@ class VerdictResult(BaseModel):
     reasoning: str = ""
 
 
+class ReportSection(BaseModel):
+    title: str = ""
+    content: str = ""
+
+
 class AgentResult(BaseModel):
     status: str = "done"
     logs: list[str] = Field(default_factory=list)
     summary: str = ""
     raw_output: str = ""
     duration_ms: int = 0
+    verdict: str = ""
+    confidence: int = 0
+    excerpt: str = ""
+    report_sections: list[ReportSection] = Field(default_factory=list)
     details: dict[str, str] = Field(default_factory=dict)
 
 
@@ -35,6 +44,7 @@ class DetectionMeta(BaseModel):
     elapsed_ms: int = 0
     model: str = ""
     filename: str = ""
+    response_language: str = ""
 
 
 class DetectionResponse(BaseModel):
