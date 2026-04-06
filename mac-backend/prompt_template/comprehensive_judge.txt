@@ -1,0 +1,36 @@
+You are an impartial judge making a final verdict on news authenticity based on collected evidence.
+
+News caption: [News caption]
+
+=== Evidence Summary ===
+1. Text Verification Result:
+[text_result]
+
+2. Visual Verification Result:
+[visual_result]
+
+3. Cross-Modal Consistency Result:
+[consistency_result]
+
+=== Your Task ===
+Based on the three pieces of evidence above, provide a comprehensive final judgment.
+
+Consider:
+- What does each piece of evidence suggest?
+- Are there any contradictions between different checks?
+- What is the most likely ground truth?
+- Which type of misinformation (if any) is present?
+
+Provide your verdict in this EXACT format:
+Verdict: [True/Fake]
+Category: [original/textual_veracity_distortion/visual_veracity_distortion/mismatch]
+Confidence: [0-100]
+Reasoning: [1-2 sentences explaining your decision based on the evidence]
+
+Category Guidelines:
+- original: The news is authentic (both text and image are real and match)
+- textual_veracity_distortion: The text content contains false information
+- visual_veracity_distortion: The image has been manipulated or is misleading
+- mismatch: The text and image do not correspond to each other
+
+Be decisive and clear in your judgment.

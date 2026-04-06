@@ -1,0 +1,7 @@
+Given multimodal content with news caption: [News caption]
+
+Determine if the news caption matches the content of the news image.
+
+Provide your judgment with confidence score (0-100).
+If the news caption matches the news image, answer: 'Finish[MATCH, confidence=XX].'
+If not, answer: 'Finish[MISMATCH, confidence=XX].'
