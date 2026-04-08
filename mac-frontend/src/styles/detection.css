@@ -1149,6 +1149,469 @@
     height: 180px;
   }
 }
+
+/* =========================
+   Enhanced Agent Card Animations
+========================= */
+
+.agent-card {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.agent-card:hover {
+  transform: translateY(-8px);
+}
+
+.agent-card.is-running {
+  animation: card-pulse 2s ease-in-out infinite;
+}
+
+@keyframes card-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 14px 36px rgba(0, 0, 0, 0.22),
+      0 0 30px rgba(62, 199, 255, 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 18px 42px rgba(0, 0, 0, 0.28),
+      0 0 50px rgba(62, 199, 255, 0.2);
+  }
+}
+
+.agent-card.is-done {
+  animation: card-success 0.6s ease-out;
+}
+
+@keyframes card-success {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.agent-orbit {
+  transition: all 0.3s ease;
+}
+
+.agent-orbit.collecting {
+  animation: orbit-active 1.5s ease-in-out infinite;
+}
+
+@keyframes orbit-active {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.agent-orbit__core {
+  transition: all 0.5s ease;
+}
+
+.agent-orbit.collecting .agent-orbit__core {
+  animation: core-pulse 1s ease-in-out infinite;
+}
+
+@keyframes core-pulse {
+  0%, 100% {
+    box-shadow: 0 0 22px rgba(69, 173, 255, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(69, 173, 255, 0.8);
+  }
+}
+
+.agent-orbit.done .agent-orbit__core {
+  animation: core-success 0.8s ease-out;
+}
+
+@keyframes core-success {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.agent-card__metrics {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: metrics-in 0.5s ease-out forwards;
+  animation-delay: 0.3s;
+}
+
+@keyframes metrics-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.agent-card__excerpt {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: excerpt-in 0.5s ease-out forwards;
+  animation-delay: 0.5s;
+}
+
+@keyframes excerpt-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================
+   Enhanced Judge Card Animations
+========================= */
+
+.judge-card {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.judge-card:hover {
+  transform: translateY(-8px);
+}
+
+.judge-visual {
+  transition: all 0.3s ease;
+}
+
+.judge-visual.collecting {
+  animation: judge-active 2s ease-in-out infinite;
+}
+
+@keyframes judge-active {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+.judge-visual__core {
+  transition: all 0.5s ease;
+}
+
+.judge-visual.collecting .judge-visual__core {
+  animation: judge-core-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes judge-core-pulse {
+  0%, 100% {
+    box-shadow: 0 0 22px rgba(61, 191, 255, 0.28);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(61, 191, 255, 0.5);
+    transform: scale(1.1);
+  }
+}
+
+.judge-visual.done .judge-visual__core {
+  animation: judge-success 0.8s ease-out;
+}
+
+@keyframes judge-success {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+  }
+}
+
+.judge-step {
+  opacity: 0;
+  transform: translateX(-20px);
+  animation: step-in 0.4s ease-out forwards;
+}
+
+.judge-step:nth-child(1) { animation-delay: 0.1s; }
+.judge-step:nth-child(2) { animation-delay: 0.2s; }
+.judge-step:nth-child(3) { animation-delay: 0.3s; }
+.judge-step:nth-child(4) { animation-delay: 0.4s; }
+.judge-step:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes step-in {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.verdict-box {
+  animation: verdict-in 0.6s ease-out;
+}
+
+@keyframes verdict-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* =========================
+   Enhanced Flow Connector Animations
+========================= */
+
+.flow-zone {
+  transition: all 0.3s ease;
+}
+
+.flow-branch {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.flow-branch.active {
+  animation: branch-flow 1s ease-in-out;
+}
+
+@keyframes branch-flow {
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+  100% {
+    height: 76px;
+    opacity: 1;
+  }
+}
+
+.flow-hub-line {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.flow-hub-line.active {
+  animation: hub-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes hub-pulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(41, 197, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(41, 197, 255, 0.6);
+  }
+}
+
+.flow-drop-line {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.flow-drop-line.active {
+  animation: drop-flow 0.8s ease-out;
+}
+
+@keyframes drop-flow {
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+  100% {
+    height: 46px;
+    opacity: 1;
+  }
+}
+
+.flow-node {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.flow-node.active {
+  animation: node-activate 0.6s ease-out;
+}
+
+@keyframes node-activate {
+  0% {
+    transform: translateX(-50%) scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: translateX(-50%) scale(1.3);
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
+}
+
+/* =========================
+   Enhanced Upload Animations
+========================= */
+
+.custom-upload {
+  transition: all 0.3s ease;
+}
+
+.custom-upload:hover .upload-inner {
+  animation: upload-hover 0.3s ease;
+}
+
+@keyframes upload-hover {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.el-upload-dragger {
+  transition: all 0.3s ease;
+}
+
+.el-upload-dragger:hover {
+  animation: dragger-glow 1s ease-in-out infinite;
+}
+
+@keyframes dragger-glow {
+  0%, 100% {
+    border-color: rgba(53, 191, 255, 0.45);
+  }
+  50% {
+    border-color: rgba(53, 191, 255, 0.7);
+  }
+}
+
+.image-preview-wrap {
+  transition: all 0.3s ease;
+}
+
+.image-preview-wrap:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 20px rgba(143, 220, 255, 0.2);
+}
+
+/* =========================
+   Enhanced Action Panel Animations
+========================= */
+
+.action-panel {
+  transition: all 0.3s ease;
+}
+
+.action-panel__status-value {
+  transition: all 0.3s ease;
+}
+
+.action-panel__button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.action-panel__button:active {
+  transform: scale(0.98);
+}
+
+.action-panel__button--primary:not(:disabled):hover {
+  animation: btn-glow 1s ease-in-out infinite;
+}
+
+@keyframes btn-glow {
+  0%, 100% {
+    box-shadow: 0 18px 40px rgba(68, 118, 255, 0.24);
+  }
+  50% {
+    box-shadow: 0 20px 50px rgba(68, 118, 255, 0.35);
+  }
+}
+
+/* =========================
+   Enhanced Input Panel Animations
+========================= */
+
+.input-panel {
+  transition: all 0.3s ease;
+}
+
+.input-panel:hover {
+  border-color: rgba(143, 220, 255, 0.15);
+}
+
+.input-panel__label {
+  transition: all 0.3s ease;
+}
+
+.input-panel:focus-within .input-panel__label {
+  color: #8fdcff;
+}
+
+/* =========================
+   Data Flow Effect for Cards
+========================= */
+
+.unified-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(143, 220, 255, 0.5),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.unified-card:hover::after {
+  opacity: 1;
+}
+
+.unified-card.is-running::after {
+  opacity: 1;
+  animation: data-line 2s linear infinite;
+}
+
+@keyframes data-line {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* =========================
+   Card Shine Effect
+========================= */
+
+.card-shine {
+  transition: all 0.5s ease;
+}
+
+.unified-card:hover .card-shine {
+  opacity: 1;
+  transform: scale(1.2);
+}
 .detect-form {
   width: 100%;
 }

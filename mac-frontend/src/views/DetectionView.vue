@@ -1,16 +1,29 @@
 <template>
   <div class="page detect-page portal-page">
+    <div class="cyber-grid"></div>
+    
+    <div class="particle-container">
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+    </div>
+    
     <div class="detect-shell portal-shell">
       <AppNavbar />
 
-      <section class="page-intro compact-intro">
+      <section class="page-intro compact-intro animate-slide-up">
         <div>
           <div class="page-intro__eyebrow">Detection Workspace</div>
-          <h1>检测工作台</h1>
+          <h1 class="tech-gradient-text">检测工作台</h1>
         </div>
       </section>
 
-      <el-card shadow="never" class="input-card">
+      <el-card shadow="never" class="input-card tech-card animate-slide-up">
         <template #header>
           <div class="section-title">新闻输入</div>
         </template>
@@ -88,7 +101,7 @@
                 <el-button
                   type="primary"
                   size="large"
-                  class="action-panel__button action-panel__button--primary"
+                  class="action-panel__button action-panel__button--primary neon-button"
                   :disabled="!canStart || running"
                   @click="startDetection"
                 >
@@ -96,7 +109,7 @@
                 </el-button>
                 <el-button
                   size="large"
-                  class="action-panel__button action-panel__button--ghost"
+                  class="action-panel__button action-panel__button--ghost neon-button"
                   :disabled="running"
                   @click="resetAll"
                 >
@@ -110,7 +123,7 @@
 
       <div class="agents-top">
         <AgentCard
-          v-for="agent in evidenceAgents"
+          v-for="(agent, index) in evidenceAgents"
           :key="agent.key"
           :title="agent.title"
           :subtitle="agent.subtitle"
@@ -120,6 +133,7 @@
           :confidence="agent.confidence"
           :excerpt="agent.excerpt"
           :report-sections="agent.reportSections"
+          :class="'stagger-' + (index + 1)"
         />
       </div>
 

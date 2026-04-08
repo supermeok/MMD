@@ -1,33 +1,47 @@
 <template>
   <div class="home-page portal-page">
     <div class="bg-grid"></div>
+    <div class="cyber-grid"></div>
+    
+    <div class="particle-container">
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+    </div>
 
     <div class="home-container portal-shell">
       <AppNavbar />
 
       <section class="portal-hero">
-        <div class="portal-hero__main portal-hero__main--card">
+        <div class="portal-hero__main portal-hero__main--card animate-slide-left">
           <div class="portal-hero__main-copy">
-            <h1>多智裁决</h1>
+            <h1 class="tech-gradient-text">多智裁决</h1>
             <p class="portal-hero__desc">基于多智能体裁决的谣言检测系统</p>
           </div>
 
           <div class="portal-hero__main-panel">
             <div class="portal-hero__actions portal-hero__actions--home">
-              <el-button type="primary" size="large" class="start-btn portal-hero__button" @click="goTo('/detect')">
+              <el-button type="primary" size="large" class="start-btn portal-hero__button neon-button" @click="goTo('/detect')">
                 开始检测
               </el-button>
-              <el-button size="large" class="home-ghost-btn portal-hero__button" @click="goTo('/knowledge')">
+              <el-button size="large" class="home-ghost-btn portal-hero__button neon-button" @click="goTo('/knowledge')">
                 进入知识库
               </el-button>
             </div>
 
             <div class="portal-hero__metrics">
-              <div class="portal-hero__metric-card">
+              <div class="portal-hero__metric-card hover-lift">
                 <span>历史记录</span>
                 <strong>{{ overview.historyTotal }}</strong>
               </div>
-              <div class="portal-hero__metric-card portal-hero__metric-card--emphasis">
+              <div class="portal-hero__metric-card portal-hero__metric-card--emphasis hover-lift animate-glow">
                 <span>待人工复查</span>
                 <strong>{{ overview.pendingReview }}</strong>
               </div>
@@ -35,8 +49,8 @@
           </div>
         </div>
 
-        <div class="portal-hero__side">
-          <el-card shadow="never" class="flow-card hero-card">
+        <div class="portal-hero__side animate-slide-right">
+          <el-card shadow="never" class="flow-card hero-card tech-card">
             <template #header>
               <div class="flow-card-header">
                 <span>系统核心流程</span>
@@ -45,21 +59,21 @@
             </template>
 
             <div class="flow-top">
-              <div class="flow-agent">
+              <div class="flow-agent hover-lift stagger-1">
                 <div class="flow-agent-icon">
                   <img :src="textIcon" alt="文本真实性" />
                 </div>
                 <div class="flow-agent-title">文本真实性分析</div>
               </div>
 
-              <div class="flow-agent">
+              <div class="flow-agent hover-lift stagger-2">
                 <div class="flow-agent-icon">
                   <img :src="visualIcon" alt="视觉真实性" />
                 </div>
                 <div class="flow-agent-title">视觉真实性检测</div>
               </div>
 
-              <div class="flow-agent">
+              <div class="flow-agent hover-lift stagger-3">
                 <div class="flow-agent-icon">
                   <img :src="consistencyIcon" alt="跨模态一致性" />
                 </div>
@@ -71,7 +85,7 @@
               <span></span>
             </div>
 
-            <div class="flow-judge">
+            <div class="flow-judge animate-float">
               <div class="judge-robot">
                 <img :src="judgeIcon" alt="综合裁决智能体" />
               </div>
@@ -82,7 +96,7 @@
         </div>
       </section>
 
-      <section class="portal-section">
+      <section class="portal-section animate-slide-up">
         <div class="portal-section__header">
           <div>
             <div class="portal-section__eyebrow">功能入口</div>
@@ -91,7 +105,7 @@
         </div>
 
         <div class="portal-feature-grid">
-          <article v-for="item in features" :key="item.path" class="portal-feature-card">
+          <article v-for="(item, index) in features" :key="item.path" class="portal-feature-card hover-lift tech-card" :class="'stagger-' + (index + 1)">
             <div class="portal-feature-card__head">
               <span class="portal-feature-card__tag">{{ item.tag }}</span>
               <el-button text class="portal-link-btn" @click="goTo(item.path)">进入</el-button>
@@ -102,19 +116,19 @@
         </div>
       </section>
 
-      <section class="portal-section">
+      <section class="portal-section animate-slide-up">
         <div class="portal-section__header">
           <div>
             <div class="portal-section__eyebrow">知识库预览</div>
             <h2>近期样本</h2>
           </div>
-          <el-button class="home-ghost-btn home-ghost-btn--small" @click="goTo('/knowledge')">
+          <el-button class="home-ghost-btn home-ghost-btn--small neon-button" @click="goTo('/knowledge')">
             进入知识库
           </el-button>
         </div>
 
         <div v-loading="previewLoading" class="portal-preview-grid">
-          <article v-for="item in previewItems" :key="item.id" class="knowledge-preview-card">
+          <article v-for="(item, index) in previewItems" :key="item.id" class="knowledge-preview-card hover-lift tech-card" :class="'stagger-' + (index + 1)">
             <div class="knowledge-preview-card__image-wrap">
               <img :src="item.image_url" :alt="item.title" class="knowledge-preview-card__image" />
             </div>

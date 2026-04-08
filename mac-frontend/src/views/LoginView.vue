@@ -1,30 +1,42 @@
 <template>
   <div class="login-page">
     <div class="bg-grid"></div>
+    <div class="cyber-grid"></div>
+    
+    <div class="particle-container">
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+    </div>
     
     <div class="login-container">
       <div class="login-left">
-        <div class="login-brand">
+        <div class="login-brand animate-slide-up">
           <div class="login-brand__dot"></div>
-          <h1 class="login-brand__title">多智裁决</h1>
+          <h1 class="login-brand__title tech-gradient-text">多智裁决</h1>
           <p class="login-brand__subtitle">基于多智能体裁决的多模态谣言检测系统</p>
         </div>
         
         <div class="login-agents">
           <div class="login-agents__top">
-            <div class="login-agent">
+            <div class="login-agent hover-lift stagger-1">
               <div class="login-agent__icon">
                 <img :src="textIcon" alt="文本智能体" />
               </div>
               <span class="login-agent__name">文本分析</span>
             </div>
-            <div class="login-agent">
+            <div class="login-agent hover-lift stagger-2">
               <div class="login-agent__icon">
                 <img :src="visualIcon" alt="视觉智能体" />
               </div>
               <span class="login-agent__name">视觉检测</span>
             </div>
-            <div class="login-agent">
+            <div class="login-agent hover-lift stagger-3">
               <div class="login-agent__icon">
                 <img :src="consistencyIcon" alt="一致性智能体" />
               </div>
@@ -38,7 +50,7 @@
           </div>
           
           <div class="login-agents__bottom">
-            <div class="login-agent login-agent--judge">
+            <div class="login-agent login-agent--judge animate-float">
               <div class="login-agent__icon login-agent__icon--judge">
                 <img :src="judgeIcon" alt="裁决智能体" />
               </div>
@@ -49,7 +61,7 @@
       </div>
       
       <div class="login-right">
-        <div class="login-form-wrapper">
+        <div class="login-form-wrapper animate-slide-right">
           <div class="login-form-header">
             <h2>{{ isLogin ? '欢迎回来' : '创建账户' }}</h2>
             <p>{{ isLogin ? '登录您的账户以继续使用系统' : '注册新账户开始使用系统' }}</p>
@@ -97,7 +109,7 @@
               <el-button
                 type="primary"
                 size="large"
-                class="login-submit-btn"
+                class="login-submit-btn neon-button"
                 :loading="loading"
                 @click="handleSubmit"
               >
@@ -108,7 +120,7 @@
           
           <div class="login-switch">
             <span>{{ isLogin ? '还没有账户？' : '已有账户？' }}</span>
-            <el-button type="text" @click="toggleMode">
+            <el-button type="text" class="glitch" @click="toggleMode">
               {{ isLogin ? '立即注册' : '立即登录' }}
             </el-button>
           </div>
