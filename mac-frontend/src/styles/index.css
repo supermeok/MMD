@@ -735,29 +735,44 @@ a {
 .neon-button {
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
+  isolation: isolate;
+  transition:
+    transform 0.28s ease,
+    box-shadow 0.28s ease,
+    filter 0.28s ease,
+    border-color 0.28s ease,
+    background 0.28s ease;
 }
 
 .neon-button::before {
   content: '';
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: width 0.6s ease, height 0.6s ease;
+  inset: -1px auto -1px -65%;
+  width: 42%;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.26) 46%,
+    transparent 100%
+  );
+  transform: skewX(-24deg);
+  transition: transform 0.68s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+  z-index: -1;
 }
 
 .neon-button:hover::before {
-  width: 300px;
-  height: 300px;
+  transform: translateX(330%) skewX(-24deg);
+}
+
+.neon-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  box-shadow: 0 14px 30px rgba(66, 124, 255, 0.22);
 }
 
 .neon-button:active {
-  transform: scale(0.98);
+  transform: translateY(0) scale(0.985);
 }
 
 /* =========================

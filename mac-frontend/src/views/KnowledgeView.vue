@@ -18,7 +18,7 @@
         </div>
       </section>
 
-      <div class="portal-filter-bar">
+      <div class="portal-filter-bar portal-filter-bar--knowledge">
         <el-select v-model="filters.fake_type" clearable :placeholder="isChinese ? '选择失真类型' : 'Select Category'" @change="handleFilter">
           <el-option :label="isChinese ? '全部类型' : 'All Types'" value="" />
           <el-option :label="isChinese ? '真实新闻' : 'Original'" value="original" />
@@ -31,6 +31,16 @@
           <el-option :label="isChinese ? '全部分类' : 'All Labels'" value="" />
           <el-option :label="isChinese ? '真实' : 'True'" :value="isChinese ? '真实' : 'True'" />
           <el-option :label="isChinese ? '虚假' : 'Fake'" :value="isChinese ? '虚假' : 'Fake'" />
+        </el-select>
+
+        <el-select v-model="filters.theme" clearable :placeholder="isChinese ? '选择主题' : 'Select Theme'" @change="handleFilter">
+          <el-option :label="isChinese ? '全部主题' : 'All Themes'" value="" />
+          <el-option
+            v-for="item in knowledgeThemeOptions"
+            :key="item.value"
+            :label="isChinese ? item.labelZh : item.labelEn"
+            :value="item.value"
+          />
         </el-select>
 
         <el-input
@@ -54,6 +64,9 @@
               </el-tag>
               <el-tag size="small" :type="getFakeTypeColor(item.fake_type)">
                 {{ getFakeTypeLabel(item.fake_type) }}
+              </el-tag>
+              <el-tag size="small" :type="getKnowledgeThemeType(item.theme)">
+                {{ getKnowledgeThemeLabel(item.theme, isChinese) }}
               </el-tag>
             </div>
 
@@ -99,6 +112,9 @@
             <el-tag size="small" :type="getFakeTypeColor(selectedItem.fake_type)">
               {{ getFakeTypeLabel(selectedItem.fake_type) }}
             </el-tag>
+            <el-tag size="small" :type="getKnowledgeThemeType(selectedItem.theme)">
+              {{ getKnowledgeThemeLabel(selectedItem.theme, isChinese) }}
+            </el-tag>
           </div>
           <h3>{{ selectedItem.title }}</h3>
           <p>{{ selectedItem.reasoning || '暂无分析说明。' }}</p>
@@ -117,7 +133,10 @@ import {
   getBinaryLabel,
   getBinaryTagType,
   getFakeTypeColor,
-  getFakeTypeLabel
+  getFakeTypeLabel,
+  getKnowledgeThemeLabel,
+  getKnowledgeThemeType,
+  knowledgeThemeOptions
 } from '../utils/contentLabels'
 
 const loading = ref(false)
@@ -135,6 +154,7 @@ const pagination = reactive({
 const filters = reactive({
   fake_type: '',
   binary_fake_type: '',
+  theme: '',
   search: ''
 })
 
@@ -149,6 +169,7 @@ async function fetchNews() {
       lang: isChinese.value ? 'zh' : 'en',
       fake_type: filters.fake_type || undefined,
       binary_fake_type: filters.binary_fake_type || undefined,
+      theme: filters.theme || undefined,
       search: filters.search || undefined
     })
 
@@ -169,6 +190,7 @@ function handleLangChange() {
   pagination.page = 1
   filters.fake_type = ''
   filters.binary_fake_type = ''
+  filters.theme = ''
   filters.search = ''
   reloadAll()
 }

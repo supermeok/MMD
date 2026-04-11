@@ -9,6 +9,7 @@ from pymongo import DESCENDING, MongoClient, ReturnDocument
 
 from app.config import Settings
 from app.schemas import (
+    DatasetAnalyticsResponse,
     DetectionMeta,
     HistoryDetailResponse,
     HistoryListResponse,
@@ -123,7 +124,9 @@ class MongoContentService:
         page_size: int,
         fake_type: str | None = None,
         binary_fake_type: str | None = None,
+        theme: str | None = None,
         search: str | None = None,
+        random_sample: bool = False,
     ) -> KnowledgeListResponse:
         collection = self.knowledge_zh if lang == "zh" else self.knowledge_en
         query: dict[str, object] = {}
@@ -138,34 +141,32 @@ class MongoContentService:
             query["Final_answers.binary_fake_type"] = (
                 binary_values[0] if len(binary_values) == 1 else {"$in": binary_values}
             )
+        if theme:
+            theme_query = self._build_theme_query(theme)
+            if theme_query:
+                query["$or"] = theme_query
         if search:
             query["Basic_info.News_Caption"] = {"$regex": search, "$options": "i"}
 
         total = collection.count_documents(query)
         total_pages = (total + page_size - 1) // page_size if total else 0
-        cursor = (
-            collection.find(query)
-            .sort("_id", DESCENDING)
-            .skip((page - 1) * page_size)
-            .limit(page_size)
-        )
-
         items = []
-        for doc in cursor:
-            basic = doc.get("Basic_info", {})
-            final = doc.get("Final_answers", {})
-            items.append(
-                {
-                    "id": str(doc["_id"]),
-                    "title": basic.get("News_Caption", ""),
-                    "image_url": self._build_knowledge_image_url(base_url, basic.get("image_path", "")),
-                    "fake_type": final.get("fake_type", ""),
-                    "binary_fake_type": final.get("binary_fake_type", ""),
-                    "reasoning": final.get("reasoning", ""),
-                    "dataset": doc.get("dataset", "MMFakeBench"),
-                    "source": basic.get("source", ""),
-                }
+        if random_sample and total:
+            pipeline = []
+            if query:
+                pipeline.append({"$match": query})
+            pipeline.append({"$sample": {"size": min(page_size, total)}})
+            docs = collection.aggregate(pipeline)
+        else:
+            docs = (
+                collection.find(query)
+                .sort("_id", DESCENDING)
+                .skip((page - 1) * page_size)
+                .limit(page_size)
             )
+
+        for doc in docs:
+            items.append(self._serialize_knowledge_item(doc=doc, base_url=base_url))
 
         return KnowledgeListResponse(
             total=total,
@@ -174,6 +175,24 @@ class MongoContentService:
             total_pages=total_pages,
             items=items,
         )
+
+    def _serialize_knowledge_item(self, *, doc: dict, base_url: str) -> dict:
+        basic = doc.get("Basic_info", {})
+        final = doc.get("Final_answers", {})
+        return {
+            "id": str(doc["_id"]),
+            "title": basic.get("News_Caption", ""),
+            "image_url": self._build_knowledge_image_url(base_url, basic.get("image_path", "")),
+            "fake_type": final.get("fake_type", ""),
+            "binary_fake_type": final.get("binary_fake_type", ""),
+            "theme": self._classify_knowledge_theme(
+                basic.get("image_path", ""),
+                basic.get("source", ""),
+            ),
+            "reasoning": final.get("reasoning", ""),
+            "dataset": doc.get("dataset", "MMFakeBench"),
+            "source": basic.get("source", ""),
+        }
 
     def get_knowledge_stats(self, *, lang: str) -> KnowledgeStatsResponse:
         collection = self.knowledge_zh if lang == "zh" else self.knowledge_en
@@ -195,6 +214,59 @@ class MongoContentService:
             total=total,
             fake_type_stats={item["_id"] or "unknown": item["count"] for item in fake_type_stats},
             binary_stats={item["_id"] or "unknown": item["count"] for item in binary_stats},
+        )
+
+    def get_dataset_analytics(self) -> DatasetAnalyticsResponse:
+        dataset_root = self._resolve_dataset_root()
+        if not dataset_root.exists():
+            return DatasetAnalyticsResponse()
+
+        folders = []
+        split_stats = {"fake": 0, "real": 0}
+        theme_stats: dict[str, int] = {}
+        technique_stats: dict[str, int] = {}
+
+        for split in ("fake", "real"):
+            split_dir = dataset_root / split
+            if not split_dir.exists():
+                continue
+
+            for folder in sorted(split_dir.iterdir(), key=lambda item: item.name.lower()):
+                if not folder.is_dir():
+                    continue
+
+                count = sum(1 for child in folder.iterdir() if child.is_file())
+                if not count:
+                    continue
+
+                theme = self._classify_dataset_theme(folder.name)
+                technique = self._classify_dataset_technique(folder.name, split)
+
+                split_stats[split] = split_stats.get(split, 0) + count
+                theme_stats[theme] = theme_stats.get(theme, 0) + count
+                technique_stats[technique] = technique_stats.get(technique, 0) + count
+                folders.append(
+                    {
+                        "name": folder.name,
+                        "split": split,
+                        "count": count,
+                        "theme": theme,
+                        "technique": technique,
+                    }
+                )
+
+        folders.sort(key=lambda item: (-item["count"], item["name"].lower()))
+        total = split_stats.get("fake", 0) + split_stats.get("real", 0)
+
+        return DatasetAnalyticsResponse(
+            total=total,
+            fake_total=split_stats.get("fake", 0),
+            real_total=split_stats.get("real", 0),
+            folder_total=len(folders),
+            split_stats=split_stats,
+            theme_stats=dict(sorted(theme_stats.items(), key=lambda item: (-item[1], item[0]))),
+            technique_stats=dict(sorted(technique_stats.items(), key=lambda item: (-item[1], item[0]))),
+            folders=folders,
         )
 
     def list_history(
@@ -333,6 +405,82 @@ class MongoContentService:
         if relative_path.startswith("http://") or relative_path.startswith("https://"):
             return relative_path
         return self._join_url(base_url, "media", relative_path)
+
+    def _classify_knowledge_theme(self, image_path: str, source: str = "") -> str:
+        folder_name = self._extract_folder_name_from_image_path(image_path) or source
+        return self._classify_dataset_theme(folder_name)
+
+    def _extract_folder_name_from_image_path(self, image_path: str) -> str:
+        if not image_path:
+            return ""
+
+        raw_path = image_path.replace("\\", "/").strip()
+        for prefix in ("./data/", "data/", "/data/"):
+            if raw_path.startswith(prefix):
+                raw_path = raw_path[len(prefix):]
+                break
+
+        parts = [part for part in Path(raw_path).parts if part not in ("", ".", "..")]
+        return parts[-2] if len(parts) >= 2 else ""
+
+    def _build_theme_query(self, theme: str) -> list[dict[str, object]]:
+        theme_keywords = {
+            "政治与公共议题": ["politicat", "fever", "bbc", "guardian", "usa_today", "wash"],
+            "娱乐与名人": ["gossipcop", "gossip"],
+            "科学与科普": ["science"],
+            "新闻报道场景": ["newsclipings"],
+            "社交媒体内容": ["fakeddit", "chatgpt"],
+            "通用视觉场景": ["coco", "antifact", "dgm4"],
+            "文本生成改写": ["llm_rewrite"],
+        }
+
+        patterns = theme_keywords.get(str(theme or "").strip(), [])
+        conditions: list[dict[str, object]] = []
+        for pattern in patterns:
+            regex = {"$regex": pattern, "$options": "i"}
+            conditions.append({"Basic_info.image_path": regex})
+            conditions.append({"Basic_info.source": regex})
+        return conditions
+
+    def _resolve_dataset_root(self) -> Path:
+        dataset_root = self.settings.knowledge_media_dir / "MMFakeBench_val"
+        return dataset_root if dataset_root.exists() else self.settings.knowledge_media_dir
+
+    def _classify_dataset_theme(self, folder_name: str) -> str:
+        normalized = folder_name.lower()
+
+        if normalized.startswith(("politicat", "fever", "bbc", "guardian", "usa_today", "wash")):
+            return "政治与公共议题"
+        if "gossipcop" in normalized or "gossip" in normalized:
+            return "娱乐与名人"
+        if "science" in normalized:
+            return "科学与科普"
+        if normalized.startswith("newsclipings"):
+            return "新闻报道场景"
+        if normalized.startswith(("fakeddit", "chatgpt")):
+            return "社交媒体内容"
+        if normalized.startswith(("coco", "antifact", "dgm4")):
+            return "通用视觉场景"
+        if normalized.startswith("llm_rewrite"):
+            return "文本生成改写"
+        return "综合开放域"
+
+    def _classify_dataset_technique(self, folder_name: str, split: str) -> str:
+        if split == "real":
+            return "真实样本"
+
+        normalized = folder_name.lower()
+        if "image_edit" in normalized or "photo_edit" in normalized:
+            return "图像编辑"
+        if "text_edit" in normalized:
+            return "文本编辑"
+        if "rewrite" in normalized:
+            return "文本改写"
+        if "midjourney" in normalized or "generation" in normalized or "_ai_" in normalized:
+            return "AIGC生成"
+        if any(keyword in normalized for keyword in ("match", "semantic", "scene", "person")):
+            return "图文错配"
+        return "其他伪造"
 
     def _expand_fake_type_aliases(self, value: str) -> list[str]:
         normalized = str(value or "").strip()

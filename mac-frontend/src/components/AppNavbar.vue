@@ -165,6 +165,7 @@ const navItems = [
   { label: '首页', path: '/' },
   { label: '开始检测', path: '/detect' },
   { label: '知识库', path: '/knowledge' },
+  { label: '数据看板', path: '/analytics' },
   { label: '历史记录', path: '/history' },
   { label: '系统手册', path: '/manual' }
 ]

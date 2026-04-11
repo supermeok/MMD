@@ -8,6 +8,11 @@ export function getKnowledgeStats(params) {
   return request.get('/knowledge/stats', { params })
 }
 
+export function getDatasetAnalytics() {
+  return request.get('/analytics/dataset')
+}
+
+
 export function getHistoryRecords(params) {
   return request.get('/history', { params })
 }

@@ -8,9 +8,6 @@
           <div class="page-intro__eyebrow">System Manual</div>
           <h1>系统手册</h1>
         </div>
-        <div class="page-intro__hint">
-          最近更新：{{ manual.updated_at ? formatDateTime(manual.updated_at) : '首次初始化后自动生成' }}
-        </div>
       </section>
 
       <div class="manual-grid">
@@ -45,10 +42,8 @@ import { computed, onMounted, reactive } from 'vue'
 
 import AppNavbar from '../components/AppNavbar.vue'
 import { getSystemManual } from '../api'
-import { formatDateTime } from '../utils/contentLabels'
 
 const manual = reactive({
-  updated_at: '',
   sections: []
 })
 
@@ -57,7 +52,6 @@ const visibleSections = computed(() => manual.sections.filter((section) => secti
 async function loadManual() {
   try {
     const response = await getSystemManual()
-    manual.updated_at = response?.updated_at || ''
     manual.sections = response?.sections || []
   } catch (error) {
     console.error('Failed to fetch manual:', error)

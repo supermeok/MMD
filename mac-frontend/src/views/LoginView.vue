@@ -12,6 +12,10 @@
       <div class="particle"></div>
       <div class="particle"></div>
       <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
     </div>
     
     <div class="login-container">

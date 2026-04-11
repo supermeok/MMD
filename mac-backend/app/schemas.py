@@ -108,6 +108,7 @@ class KnowledgeItem(BaseModel):
     image_url: str = ""
     fake_type: str = ""
     binary_fake_type: str = ""
+    theme: str = ""
     reasoning: str = ""
     dataset: str = ""
     source: str = ""
@@ -121,6 +122,25 @@ class KnowledgeStatsResponse(BaseModel):
     total: int = 0
     fake_type_stats: dict[str, int] = Field(default_factory=dict)
     binary_stats: dict[str, int] = Field(default_factory=dict)
+
+
+class DatasetFolderStat(BaseModel):
+    name: str
+    split: str
+    count: int = 0
+    theme: str = ""
+    technique: str = ""
+
+
+class DatasetAnalyticsResponse(BaseModel):
+    total: int = 0
+    fake_total: int = 0
+    real_total: int = 0
+    folder_total: int = 0
+    split_stats: dict[str, int] = Field(default_factory=dict)
+    theme_stats: dict[str, int] = Field(default_factory=dict)
+    technique_stats: dict[str, int] = Field(default_factory=dict)
+    folders: list[DatasetFolderStat] = Field(default_factory=list)
 
 
 class HistoryRecordSummary(BaseModel):

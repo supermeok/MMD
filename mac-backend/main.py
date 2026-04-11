@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from app.config import get_settings
 from app.schemas import (
     AvatarUploadResponse,
+    DatasetAnalyticsResponse,
     DetectionResponse,
     HistoryDeleteResponse,
     HistoryDetailResponse,
@@ -198,7 +199,9 @@ async def knowledge_articles(
     page_size: int = Query(12, ge=1, le=48),
     fake_type: str | None = None,
     binary_fake_type: str | None = None,
+    theme: str | None = None,
     search: str | None = None,
+    random_sample: bool = Query(False),
     lang: str = Query("zh", pattern="^(zh|en)$"),
 ):
     repository = MongoContentService(settings)
@@ -210,7 +213,9 @@ async def knowledge_articles(
             page_size=page_size,
             fake_type=fake_type,
             binary_fake_type=binary_fake_type,
+            theme=theme,
             search=search,
+            random_sample=random_sample,
         )
     finally:
         repository.close()
@@ -221,6 +226,15 @@ async def knowledge_stats(lang: str = Query("zh", pattern="^(zh|en)$")):
     repository = MongoContentService(settings)
     try:
         return repository.get_knowledge_stats(lang=lang)
+    finally:
+        repository.close()
+
+
+@app.get("/api/analytics/dataset", response_model=DatasetAnalyticsResponse)
+async def dataset_analytics():
+    repository = MongoContentService(settings)
+    try:
+        return repository.get_dataset_analytics()
     finally:
         repository.close()
 

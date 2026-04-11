@@ -1,20 +1,7 @@
-<template>
+﻿<template>
   <div class="home-page portal-page">
     <div class="bg-grid"></div>
     <div class="cyber-grid"></div>
-    
-    <div class="particle-container">
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-    </div>
 
     <div class="home-container portal-shell">
       <AppNavbar />
@@ -82,7 +69,8 @@
             </div>
 
             <div class="flow-merge">
-              <span></span>
+              <div class="flow-merge__line"></div>
+              <div class="flow-merge__arrow"></div>
             </div>
 
             <div class="flow-judge animate-float">
@@ -119,36 +107,54 @@
       <section class="portal-section animate-slide-up">
         <div class="portal-section__header">
           <div>
-            <div class="portal-section__eyebrow">知识库预览</div>
-            <h2>近期样本</h2>
+            <div class="portal-section__eyebrow">样本预览</div>
+            <h2>部分样本</h2>
           </div>
-          <el-button class="home-ghost-btn home-ghost-btn--small neon-button" @click="goTo('/knowledge')">
-            进入知识库
-          </el-button>
+          <div class="portal-section__actions">
+            <el-button
+              circle
+              class="portal-icon-btn portal-icon-btn--refresh"
+              :loading="previewLoading"
+              :icon="RefreshRight"
+              aria-label="刷新样本"
+              title="刷新样本"
+              @click="refreshHomeData"
+            />
+            <el-button class="home-ghost-btn home-ghost-btn--small neon-button" @click="goTo('/knowledge')">
+              进入知识库
+            </el-button>
+          </div>
         </div>
 
-        <div v-loading="previewLoading" class="portal-preview-grid">
-          <article v-for="(item, index) in previewItems" :key="item.id" class="knowledge-preview-card hover-lift tech-card" :class="'stagger-' + (index + 1)">
-            <div class="knowledge-preview-card__image-wrap">
-              <img :src="item.image_url" :alt="item.title" class="knowledge-preview-card__image" />
-            </div>
-            <div class="knowledge-preview-card__body">
-              <div class="knowledge-preview-card__tags">
-                <el-tag size="small" :type="getBinaryTagType(item.binary_fake_type)">
-                  {{ getBinaryLabel(item.binary_fake_type) }}
-                </el-tag>
-                <el-tag size="small" :type="getFakeTypeColor(item.fake_type)">
-                  {{ getFakeTypeLabel(item.fake_type) }}
-                </el-tag>
+        <div v-loading="previewLoading && !previewItems.length">
+          <transition-group name="sample-swap" tag="div" class="portal-preview-grid">
+            <article
+              v-for="(item, index) in previewItems"
+              :key="`${item.id}-${previewVersion}`"
+              class="knowledge-preview-card hover-lift tech-card"
+              :class="getPreviewStaggerClass(index)"
+            >
+              <div class="knowledge-preview-card__image-wrap">
+                <img :src="item.image_url" :alt="item.title" class="knowledge-preview-card__image" />
               </div>
-              <h3>{{ item.title }}</h3>
-              <p>{{ item.reasoning || '暂无推理摘要。' }}</p>
-            </div>
-          </article>
+              <div class="knowledge-preview-card__body">
+                <div class="knowledge-preview-card__tags">
+                  <el-tag size="small" :type="getBinaryTagType(item.binary_fake_type)">
+                    {{ getBinaryLabel(item.binary_fake_type) }}
+                  </el-tag>
+                  <el-tag size="small" :type="getFakeTypeColor(item.fake_type)">
+                    {{ getFakeTypeLabel(item.fake_type) }}
+                  </el-tag>
+                </div>
+                <h3>{{ item.title }}</h3>
+                <p>{{ item.reasoning || '暂无推理摘要。' }}</p>
+              </div>
+            </article>
 
-          <div v-if="!previewLoading && !previewItems.length" class="portal-empty-state">
-            暂未读取到知识库样本，请确认 MongoDB 已导入 `multiple_count_zh` / `multiple_count` 集合。
-          </div>
+            <div v-if="!previewLoading && !previewItems.length" key="empty" class="portal-empty-state">
+              暂无样本数据。
+            </div>
+          </transition-group>
         </div>
       </section>
     </div>
@@ -156,6 +162,7 @@
 </template>
 
 <script setup>
+import { RefreshRight } from '@element-plus/icons-vue'
 import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -171,6 +178,7 @@ import {
 const router = useRouter()
 const previewLoading = ref(false)
 const previewItems = ref([])
+const previewVersion = ref(0)
 const overview = reactive({
   historyTotal: 0,
   pendingReview: 0
@@ -183,10 +191,10 @@ const judgeIcon = new URL('../assets/judge-agent.svg', import.meta.url).href
 
 const features = [
   {
-    tag: 'Knowledge',
-    title: '新闻知识库',
-    description: '查看图文样本，支持分类筛选与详情查看。',
-    path: '/knowledge'
+    tag: 'Analytics',
+    title: '数据看板',
+    description: '查看数据分布、主题细分与复查统计。',
+    path: '/analytics'
   },
   {
     tag: 'History',
@@ -206,16 +214,23 @@ function goTo(path) {
   router.push(path)
 }
 
-async function loadOverview() {
+async function loadHomeData() {
+  if (previewLoading.value) {
+    return
+  }
+
+  previewLoading.value = true
+
   try {
     const [historySummary, knowledgePreview] = await Promise.all([
       getHistorySummary(),
-      getKnowledgeArticles({ page: 1, page_size: 3, lang: 'zh' })
+      getKnowledgeArticles({ page: 1, page_size: 6, lang: 'zh', random_sample: true })
     ])
 
     overview.historyTotal = historySummary?.total || 0
     overview.pendingReview = historySummary?.pending_review || 0
     previewItems.value = knowledgePreview?.items || []
+    previewVersion.value += 1
   } catch (error) {
     console.error('Failed to load home overview:', error)
   } finally {
@@ -223,8 +238,15 @@ async function loadOverview() {
   }
 }
 
+function refreshHomeData() {
+  loadHomeData()
+}
+
+function getPreviewStaggerClass(index) {
+  return `stagger-${(index % 3) + 1}`
+}
+
 onMounted(() => {
-  previewLoading.value = true
-  loadOverview()
+  loadHomeData()
 })
 </script>

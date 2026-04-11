@@ -50,6 +50,99 @@ export function getFakeTypeColor(type = '') {
   return colors[type] || 'info'
 }
 
+export function getKnowledgeThemeLabel(theme = '', isChinese = true) {
+  const labels = {
+    '政治与公共议题': {
+      zh: '政治与公共议题',
+      en: 'Politics & Public Affairs'
+    },
+    '通用视觉场景': {
+      zh: '通用视觉场景',
+      en: 'General Visual Scenes'
+    },
+    '新闻报道场景': {
+      zh: '新闻报道场景',
+      en: 'News Reporting Scenes'
+    },
+    '社交媒体内容': {
+      zh: '社交媒体内容',
+      en: 'Social Media Content'
+    },
+    '娱乐与名人': {
+      zh: '娱乐与名人',
+      en: 'Entertainment & Celebrity'
+    },
+    '文本生成改写': {
+      zh: '文本生成改写',
+      en: 'Text Rewrite'
+    },
+    '科学与科普': {
+      zh: '科学与科普',
+      en: 'Science & Popular Science'
+    },
+    '综合开放域': {
+      zh: '综合开放域',
+      en: 'Open Domain'
+    }
+  }
+
+  const item = labels[theme]
+  if (!item) return theme || (isChinese ? '未分类主题' : 'Uncategorized')
+  return isChinese ? item.zh : item.en
+}
+
+export function getKnowledgeThemeType(theme = '') {
+  const colors = {
+    '政治与公共议题': 'danger',
+    '通用视觉场景': 'warning',
+    '新闻报道场景': 'primary',
+    '社交媒体内容': 'info',
+    '娱乐与名人': 'success',
+    '文本生成改写': 'warning',
+    '科学与科普': 'success',
+    '综合开放域': 'info'
+  }
+  return colors[theme] || 'info'
+}
+
+export const knowledgeThemeOptions = [
+  {
+    value: '政治与公共议题',
+    labelZh: '政治与公共议题',
+    labelEn: 'Politics & Public Affairs'
+  },
+  {
+    value: '通用视觉场景',
+    labelZh: '通用视觉场景',
+    labelEn: 'General Visual Scenes'
+  },
+  {
+    value: '新闻报道场景',
+    labelZh: '新闻报道场景',
+    labelEn: 'News Reporting Scenes'
+  },
+  {
+    value: '社交媒体内容',
+    labelZh: '社交媒体内容',
+    labelEn: 'Social Media Content'
+  },
+  {
+    value: '娱乐与名人',
+    labelZh: '娱乐与名人',
+    labelEn: 'Entertainment & Celebrity'
+  },
+  {
+    value: '文本生成改写',
+    labelZh: '文本生成改写',
+    labelEn: 'Text Rewrite'
+  },
+  {
+    value: '科学与科普',
+    labelZh: '科学与科普',
+    labelEn: 'Science & Popular Science'
+  }
+]
+
 export function getReviewStatusLabel(status = '') {
   const labels = {
     pending: '待复查',

@@ -1,18 +1,7 @@
 <template>
   <div class="page detect-page portal-page">
     <div class="cyber-grid"></div>
-    
-    <div class="particle-container">
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-    </div>
-    
+
     <div class="detect-shell portal-shell">
       <AppNavbar />
 
